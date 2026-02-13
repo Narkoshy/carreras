@@ -1,201 +1,141 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import io from 'socket.io-client';
 import axios from 'axios';
+import { API_URL } from './config';
+import './CarreraCaballos.css';
 
-const socket = io('https://nurserace-backend.onrender.com');
+const socket = io(API_URL, { transports: ['websocket', 'polling'] });
+
+function normalizeEstado(payload) {
+  if (payload && payload.progreso) {
+    return {
+      progreso: payload.progreso,
+      puntosNecesarios: payload.puntosNecesarios || 20,
+      carreraFinalizada: Boolean(payload.carreraFinalizada),
+    };
+  }
+
+  return {
+    progreso: payload || { grupo1: 0, grupo2: 0, grupo3: 0 },
+    puntosNecesarios: 20,
+    carreraFinalizada: false,
+  };
+}
 
 const CarreraCaballos = () => {
-    const [progreso, setProgreso] = useState({ grupo1: 0, grupo2: 0, grupo3: 0 });
-    const [ganador, setGanador] = useState(null);
-    const [tiempo, setTiempo] = useState(0); // ⏱ Estado del cronómetro
-    const [enMarcha, setEnMarcha] = useState(false); // 🚦 Controla si el cronómetro está en marcha
+  const [progreso, setProgreso] = useState({ grupo1: 0, grupo2: 0, grupo3: 0 });
+  const [ganador, setGanador] = useState(null);
+  const [tiempo, setTiempo] = useState(0);
+  const [enMarcha, setEnMarcha] = useState(false);
+  const [puntosNecesarios, setPuntosNecesarios] = useState(20);
 
-    useEffect(() => {
-        console.log("🔗 Conectando a WebSockets...");
-        socket.on('actualizarCarrera', (nuevaCarrera) => {
-            console.log("📡 Datos recibidos desde el backend:", nuevaCarrera);
-            setProgreso(nuevaCarrera);
+  useEffect(() => {
+    const loadEstadoInicial = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/estado`);
+        const estado = normalizeEstado(response.data);
+        setProgreso(estado.progreso);
+        setPuntosNecesarios(estado.puntosNecesarios);
+      } catch (_err) {
+        // fallback a valores por defecto
+      }
+    };
 
-            // Verificar si algún grupo ha ganado y detener el cronómetro
-            Object.entries(nuevaCarrera).forEach(([grupo, avance]) => {
-                if (avance >= 20) {
-                    setGanador(grupo);
-                    setEnMarcha(false); // ⏹ Detiene el cronómetro cuando hay ganador
-                }
-            });
-        });
+    loadEstadoInicial();
 
-        return () => {
-            socket.off('actualizarCarrera');
-        };
-    }, []);
+    socket.on('actualizarCarrera', (payload) => {
+      const estado = normalizeEstado(payload);
+      setProgreso(estado.progreso);
+      setPuntosNecesarios(estado.puntosNecesarios);
 
-    useEffect(() => {
-        let intervalo;
-        if (enMarcha) {
-            intervalo = setInterval(() => {
-                setTiempo((prevTiempo) => prevTiempo + 1);
-            }, 1000);
-        } else {
-            clearInterval(intervalo);
+      Object.entries(estado.progreso).forEach(([grupo, avance]) => {
+        if (avance >= estado.puntosNecesarios) {
+          setGanador(grupo);
+          setEnMarcha(false);
         }
-        return () => clearInterval(intervalo);
-    }, [enMarcha]);
+      });
+    });
 
-    const iniciarCarrera = () => {
-        setTiempo(0); // 🔄 Reinicia el tiempo
-        setGanador(null); // 🔄 Reinicia el ganador
-        setEnMarcha(true); // ▶️ Inicia el cronómetro
+    return () => {
+      socket.off('actualizarCarrera');
     };
+  }, []);
 
-    const reiniciarCarrera = () => {
-        axios.post('https://nurserace-backend.onrender.com/reiniciar')
-            .then(response => {
-                console.log(response.data.mensaje);
-                setProgreso({ grupo1: 0, grupo2: 0, grupo3: 0 });
-                setTiempo(0);
-                setGanador(null);
-                setEnMarcha(false);
-            })
-            .catch(error => console.error("Error al reiniciar:", error));
-    };
+  useEffect(() => {
+    let intervalo;
+    if (enMarcha) {
+      intervalo = setInterval(() => {
+        setTiempo((prev) => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(intervalo);
+  }, [enMarcha]);
 
-    return (
-        <div style={{
-            textAlign: 'center',
-            marginTop: '20px',
-            backgroundImage: 'url("/pista.jpg")',
-            backgroundSize: 'cover',
-            height: '100vh',
-            padding: '20px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center'
-        }}>
-            <h1 style={{
-                color: 'white',
-                fontSize: '4em',
-                textShadow: '2px 2px 4px black',
-                marginBottom: '20px'
-            }}>
-                🐪 Cursa de Camells 🐪
-            </h1>
+  const iniciarCarrera = () => {
+    setTiempo(0);
+    setGanador(null);
+    setEnMarcha(true);
+  };
 
-            {/* ⏱ Mostrar el tiempo en la pantalla */}
-            <h2 style={{
-                color: 'green',
-                fontSize: '2em',
-                textShadow: '2px 2px 4px black'
-            }}>
-                ⏱ Temps: {tiempo} segons
-            </h2>
+  const reiniciarCarrera = async () => {
+    try {
+      await axios.post(`${API_URL}/reiniciar`);
+      setProgreso({ grupo1: 0, grupo2: 0, grupo3: 0 });
+      setTiempo(0);
+      setGanador(null);
+      setEnMarcha(false);
+    } catch (_err) {
+      // sin cambios de estado si falla
+    }
+  };
 
-            {/* 🔘 Botón de Start */}
-            {!enMarcha && !ganador && (
-                <button 
-                    onClick={iniciarCarrera} 
-                    style={{
-                        padding: '10px 20px',
-                        fontSize: '16px',
-                        backgroundColor: '#007bff',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
-                        marginBottom: '20px'
-                    }}
-                >
-                    Start
-                </button>
-            )}
+  return (
+    <main className="race-shell">
+      <section className="race-card">
+        <header className="race-header">
+          <p>Cursa en directe</p>
+          <h1>Cursa de Camells</h1>
+          <div className="race-status">
+            <span>Temps: {tiempo}s</span>
+            <span>Meta: {puntosNecesarios} encerts</span>
+          </div>
+        </header>
 
-            {ganador ? (
-                <>
-                    <h2 style={{
-                        color: 'yellow',
-                        fontSize: '3em',
-                        textShadow: '2px 2px 4px black',
-                        marginBottom: '20px'
-                    }}>
-                        🎉 ¡{ganador} ha guanyat en {tiempo} segons! 🎉
-                    </h2>
+        {!enMarcha && !ganador ? (
+          <button className="race-primary" onClick={iniciarCarrera}>
+            Iniciar cronometre
+          </button>
+        ) : null}
 
-                    {/* 🔄 Botón de reinicio */}
-                    <button 
-                        onClick={reiniciarCarrera}
-                        style={{
-                            padding: '10px 20px',
-                            fontSize: '16px',
-                            backgroundColor: '#dc3545',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '5px',
-                            cursor: 'pointer',
-                            marginTop: '20px'
-                        }}
-                    >
-                        🔄 Reiniciar Carrera
-                    </button>
-                </>
-            ) : (
-                <div style={{
-                    maxWidth: '900px',
-                    width: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center'
-                }}>
-                    {Object.entries(progreso).map(([grupo, avance]) => (
-                        <div key={grupo} style={{
-                            width: '100%',
-                            marginBottom: '50px', // Aumentamos el espacio entre camellos
-                            position: 'relative',
-                            height: '120px' // Hacemos más grande la pista de cada camello
-                        }}>
-                            <h2 style={{
-                                color: 'white',
-                                textShadow: '1px 1px 3px black',
-                                marginBottom: '5px',
-                                fontSize: '1.5em'
-                            }}>
-                                {grupo === "grupo1" ? "Grup 1" : grupo === "grupo2" ? "Grup 2" : "Grup 3"}
-                            </h2>
-                            <div style={{
-                                width: '100%',
-                                height: '100px',
-                                borderRadius: '10px',
-                                position: 'relative',
-                                overflow: 'hidden',
-                                display: 'flex',
-                                alignItems: 'center',
-                                background: `repeating-linear-gradient(
-                                    45deg,
-                                    #8B4513 0px,
-                                    #8B4513 15px,
-                                    #A0522D 15px,
-                                    #A0522D 30px
-                                )`
-                            }}>
-                                {/* Imagen del camello avanzando */}
-                                <img 
-                                    src="/caballo.png" 
-                                    alt="Caballo" 
-                                    style={{
-                                        position: 'absolute',
-                                        left: `${(avance / 20) * 100}%`,
-                                        transition: 'left 0.5s ease-in-out',
-                                        height: '100px' // Ajustamos el tamaño del camello
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
+        {ganador ? (
+          <div className="race-winner">
+            <h2>{ganador} ha guanyat en {tiempo} segons.</h2>
+            <button className="race-reset" onClick={reiniciarCarrera}>Reiniciar carrera</button>
+          </div>
+        ) : (
+          <div className="race-lanes">
+            {Object.entries(progreso).map(([grupo, avance]) => {
+              const percent = Math.min(100, (avance / puntosNecesarios) * 100);
+              const label = grupo === 'grupo1' ? 'Grup 1' : grupo === 'grupo2' ? 'Grup 2' : 'Grup 3';
+
+              return (
+                <article className="race-lane" key={grupo}>
+                  <div className="race-lane-head">
+                    <h2>{label}</h2>
+                    <p>{avance}/{puntosNecesarios}</p>
+                  </div>
+                  <div className="race-track">
+                    <div className="race-track-fill" style={{ width: `${percent}%` }} />
+                    <img src="/caballo.png" alt="camell" style={{ left: `${percent}%` }} />
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
+    </main>
+  );
 };
 
 export default CarreraCaballos;
-

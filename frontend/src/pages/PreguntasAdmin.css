@@ -1,0 +1,177 @@
+.admin-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.2rem;
+}
+
+.admin-panel {
+  width: min(1200px, 100%);
+  background: rgba(8, 19, 29, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 26px;
+  padding: 1.2rem;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.32);
+}
+
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.admin-header h1 {
+  margin: 0.2rem 0 0;
+  color: var(--ink);
+}
+
+.admin-kicker {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+}
+
+.admin-actions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.admin-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.editor-card,
+.list-card {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 1rem;
+}
+
+.editor-card h2,
+.list-card h2 {
+  margin-top: 0;
+  color: var(--ink);
+}
+
+.editor-card label {
+  display: block;
+  margin-bottom: 0.7rem;
+  color: var(--ink);
+  font-size: 0.88rem;
+}
+
+.editor-card input,
+.editor-card textarea,
+.editor-card select {
+  width: 100%;
+  margin-top: 0.32rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(8, 18, 27, 0.6);
+  color: var(--ink);
+  padding: 0.62rem 0.72rem;
+  font-size: 0.94rem;
+}
+
+.editor-card textarea {
+  resize: vertical;
+}
+
+.primary,
+.ghost,
+.danger {
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.primary {
+  width: 100%;
+  margin-top: 0.4rem;
+  background: linear-gradient(120deg, #0ea5e9, #1d4ed8);
+  color: #fff;
+  padding: 0.75rem 0.8rem;
+}
+
+.ghost {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ink);
+  padding: 0.58rem 0.78rem;
+}
+
+.danger {
+  background: rgba(239, 68, 68, 0.16);
+  color: #fecaca;
+  padding: 0.58rem 0.78rem;
+}
+
+.list-card ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 62vh;
+  overflow: auto;
+}
+
+.list-card li {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.72rem 0;
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.list-card li p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.9rem;
+}
+
+.list-card li p span {
+  color: var(--ink-soft);
+}
+
+.list-card li div {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.admin-message {
+  margin: 0 0 0.8rem;
+  border-radius: 10px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.9rem;
+}
+
+.admin-message.ok {
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.26);
+  color: #bbf7d0;
+}
+
+.admin-message.error {
+  background: rgba(239, 68, 68, 0.13);
+  border: 1px solid rgba(239, 68, 68, 0.22);
+  color: #fecaca;
+}
+
+@media (max-width: 960px) {
+  .admin-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

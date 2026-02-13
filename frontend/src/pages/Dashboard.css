@@ -1,64 +1,149 @@
-/* 🏆 Contenedor principal del Dashboard */
-.dashboard-container {
+.dashboard-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-panel {
+  width: min(940px, 100%);
+  background: rgba(10, 22, 32, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 28px;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.28);
+  animation: panel-in 500ms ease-out;
+  z-index: 1;
+}
+
+.dashboard-kicker {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.74rem;
+  color: var(--ink-soft);
+}
+
+.dashboard-title {
+  margin: 0.45rem 0 1.5rem;
+  font-size: clamp(1.6rem, 4.2vw, 2.7rem);
+  color: var(--ink);
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.95rem;
+}
+
+.dashboard-card {
+  border: 0;
+  border-radius: 16px;
+  padding: 1rem;
+  text-align: left;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 180ms ease, filter 180ms ease;
+  min-height: 104px;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  height: 100vh;
-  background-color: #f4f4f4;
-  font-family: Arial, sans-serif;
 }
 
-/* 🎖️ Título principal */
-.dashboard-title {
-  font-size: 2.8rem;  /* Título más grande */
-  font-weight: bold;
-  margin-bottom: 40px; /* Más espacio entre título y botones */
+.dashboard-card span {
+  font-size: 1.15rem;
+  font-weight: 700;
 }
 
-/* 📌 Contenedor de botones (Alineación y espacio) */
-.dashboard-buttons {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 25px; /* Más espacio entre botones */
-  max-width: 600px;
+.dashboard-card small {
+  margin-top: 0.25rem;
+  font-size: 0.78rem;
+  opacity: 0.9;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-3px);
+  filter: saturate(1.12);
+}
+
+.dashboard-card-g1 {
+  background: linear-gradient(120deg, #0e7490, #06b6d4);
+}
+
+.dashboard-card-g2 {
+  background: linear-gradient(120deg, #0f766e, #14b8a6);
+}
+
+.dashboard-card-g3 {
+  background: linear-gradient(120deg, #b45309, #f97316);
+}
+
+.dashboard-card-race {
+  background: linear-gradient(120deg, #475569, #0f172a);
+}
+
+.dashboard-card-admin {
+  grid-column: 1 / -1;
+  background: linear-gradient(120deg, #111827, #1d4ed8);
+}
+
+.dashboard-logout {
+  margin-top: 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: transparent;
+  color: var(--ink);
+  border-radius: 12px;
+  padding: 0.78rem 1rem;
   width: 100%;
-}
-
-/* 🔘 Botones de los grupos */
-.button {
-  padding: 18px 25px; /* Botones más grandes */
-  font-size: 1.5rem; /* Texto más grande */
-  font-weight: bold;
-  border: none;
   cursor: pointer;
-  border-radius: 10px;
-  transition: all 0.3s ease-in-out;
 }
 
-/* 🌈 Colores para cada botón */
-.grupo1 { background-color: #3498db; color: white; }
-.grupo2 { background-color: #2ecc71; color: white; }
-.grupo3 { background-color: #f39c12; color: white; }
-.carrera { background-color: #e74c3c; color: white; }
-
-/* ✨ Efecto hover */
-.button:hover { opacity: 0.8; transform: scale(1.05); }
-
-/* 🚪 Botón de cerrar sesión */
-.logout-button {
-  margin-top: 50px; /* Más espacio arriba */
-  padding: 15px 30px;
-  font-size: 1.2rem;
-  background-color: #333;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease-in-out;
+.dashboard-logout:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.logout-button:hover {
-  background-color: #555;
-  transform: scale(1.05);
+.dashboard-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.dashboard-glow div {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(22px);
+}
+
+.dashboard-glow div:first-child {
+  width: 240px;
+  height: 240px;
+  top: 10%;
+  right: 8%;
+  background: rgba(14, 116, 144, 0.32);
+}
+
+.dashboard-glow div:last-child {
+  width: 210px;
+  height: 210px;
+  bottom: 9%;
+  left: 9%;
+  background: rgba(249, 115, 22, 0.24);
+}
+
+@media (max-width: 760px) {
+  .dashboard-panel {
+    padding: 1.2rem;
+    border-radius: 20px;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-card-admin {
+    grid-column: auto;
+  }
 }
